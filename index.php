@@ -3,6 +3,7 @@
 <head>
 	<title>Test</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="css/dataTables.bootstrap.min.css">
 </head>
 <body>
  	<div class="container" style="margin-top: 30px;">
@@ -41,6 +42,9 @@
  							<td>Options</td>
  						</tr>
  					</thead>
+ 					<tbody>
+ 						
+ 					</tbody>
  				</table>
  			</div>
  		</div>
@@ -49,12 +53,36 @@
 
  	<script src="http://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+ 	<script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
+ 	<script type="text/javascript" src="js/dataTables.bootstrap.min.js"></script>
  	<script type="text/javascript">
  		$(document).ready(function(){
  			$('#addNew').on('click', function(){
  				$('#tableManager').modal('show');
  			});
+ 			getExistingData(0, 10);
  		});
+
+ 		function getExistingData(start,limit){
+ 			$.ajax({
+ 				url : 'ajax.php',
+ 				method : 'POST',
+ 				dataType : 'text',
+ 				data : {
+ 					key :  'getExistingData',
+ 					start : start,
+ 					limit : limit
+ 				}, success : function(response){
+ 					if(response != "reachedMax"){
+ 						$('tbody').append(response);
+ 						start += limit;
+ 						getExistingData(start, limit);
+ 					} else{
+ 						$(".table").dataTable();
+ 					}
+ 				}
+ 			});
+ 		}
 
  		function manageData(key){
  				var name = $("#countryName");
@@ -63,7 +91,7 @@
 
  				if(isNotEmpty(name) && isNotEmpty(shortDesc) && isNotEmpty(longDesc)){
  					$.ajax({
- 						url : 'create.php',
+ 						url : 'ajax.php',
  						method : 'POST',
  						dataType : 'text',
  						data : {
