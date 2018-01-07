@@ -16,13 +16,24 @@
 	 				</div>
 
 	 				<div class="modal-body">
-	 					<input type="text" class="form-control" placeholder="Country Name..." id="countryName"><br>
-	 					<textarea class="form-control" id="shortDesc" placeholder="Country short description..."></textarea><br>
-	 					<textarea class="form-control" id="longDesc" placeholder="Country long description..."></textarea><br>
-	 					<input type="hidden" id="editRowId" value="0"> 
+	 					<div id="editContent">
+		 					<input type="text" class="form-control" placeholder="Country Name..." id="countryName"><br>
+		 					<textarea class="form-control" id="shortDesc" placeholder="Country short description..."></textarea><br>
+		 					<textarea class="form-control" id="longDesc" placeholder="Country long description..."></textarea><br>
+		 					<input type="hidden" id="editRowId" value="0"> 
+		 				</div>
+		 				<div id="showContent" style="display:none;">
+		 					<h3>Short Description</h3>
+		 					<div id="shortDescView"></div>
+		 					<hr>
+		 					<h3>Long Description</h3>
+		 					<div id="longtDescView" style="overflow-y: scroll; height: 300px"></div>
+		 				</div>
 	 				</div>
 
 	 				<div class="modal-footer">
+	 					<input type="button" class="btn btn-primary" data-dismiss='modal' value="close" id="closeBtn" style="display: none;">
+
 	 					<input type="button" id="manageBtn" class="btn btn-success" value="Save" onclick="manageData('addNew')">
 	 				</div>
  			     </div>
@@ -62,9 +73,37 @@
  				$('#tableManager').modal('show');
  			});
  			getExistingData(0, 50);
+
+ 			$("#tableManager").on('hidden-.bs.modal', function(){
+ 				$('#showContent').fadeOut();
+ 				$('#editContent').fadeIn();
+ 				$('#editRowId').val(0);
+ 				$('#longDesc').val('');
+ 				$('#shortDesc').val('');
+ 				$('#countryName').val('');
+ 				$('#closeBtn').fadeOut();
+ 				$('#manageBtn').attr('value', 'Add').attr('onclick', "manageData('addNew')").fadeIn();
+ 			});
  		});
 
- 		function edit(rowId){
+ 		function deleteRow(rowID){
+ 			if(confirm('Are you sure??')){
+ 				$.ajax({
+ 				url : 'ajax.php',
+ 				method : 'POST',
+ 				dataType : 'text',
+ 				data : {
+ 					key : 'deleteRow',
+ 					rowID : rowID,
+ 				}, success : function(response){
+ 					$('#country_'+rowID).parent().remove();
+ 					alert(response);
+ 					}
+ 			});
+  			}
+ 		}
+
+ 		function viewORedit(rowId, type){
  			$.ajax({
  				url : 'ajax.php',
  				method : 'POST',
@@ -73,12 +112,28 @@
  					key : 'getRowData',
  					rowId : rowId,
  				}, success : function(response){
- 					$('#editRowId').val(rowId);
- 					$('#countryName').val(response.countryName);
- 					$('#shortDesc').val(response.shortDesc);
- 					$('#longDesc').val(response.longDesc);
+ 					if(type == 'view'){
+ 						$('#showContent').fadeIn();
+ 						$('#editContent').fadeOut();
+ 						$('#shortDescView').html(response.shortDesc);
+ 						$('#longtDescView').html(response.longDesc);
+ 						$('#closeBtn').fadeIn();
+ 						$('#manageBtn').fadeOut();
+ 					
+ 					}else{
+ 						$('#showContent').fadeOut();
+ 						$('#editContent').fadeIn();
+ 						$('#editRowId').val(rowId);
+ 						$('#countryName').val(response.countryName);
+ 						$('#shortDesc').val(response.shortDesc);
+ 						$('#longDesc').val(response.longDesc);
+ 						$('#closeBtn').fadeOut();
+ 						$('#manageBtn').attr('value', 'Save Changes').attr('onclick', "manageData('updateRow')").fadeIn();
+ 					}
+
+ 					$('.modal-title').html(response.countryName);
  					$('#tableManager').modal('show');
- 					$('#manageBtn').attr('value', 'Save Changes').attr('onclick', "manageData('updateRow')");
+ 					
  				}
  			});
  		}
@@ -129,7 +184,8 @@
  								name.val('');
  								shortDesc.val('');
  								longDesc.val('');
- 								$('#manageBtn').attr('value', 'Add').attr('onclick', "manageData('addNew')");
+ 								$('#manageBtn').attr('value', 'Save').attr('onclick', "manageData('addNew')").fadeIn();
+ 							
  								$("#tableManager").modal('hide');
  								
  							}

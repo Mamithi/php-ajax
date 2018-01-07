@@ -36,9 +36,9 @@
  							<td>' .$data["id"].'</td>
  							<td id="country_' .$data["id"].'">' .$data["country_name"] . '</td>
  							<td>
- 								<input type="button" value="Edit" onclick="edit('.$data["id"].')" class="btn btn-primary">
- 								<input type="button" value="View">
- 								<input type="button" value="Delete" class="btn btn-danger">
+ 								<input type="button" value="Edit" onclick="viewORedit('.$data["id"].', \'edit\')" class="btn btn-primary">
+ 								<input type="button" value="View"  onclick="viewORedit('.$data["id"].', \'view\')">
+ 								<input type="button" value="Delete" class="btn btn-danger" onclick="deleteRow('.$data["id"].')">
  							</td>
  						</tr>
  					';
@@ -49,11 +49,20 @@
  			}
 }
 
+		$rowID = $conn->real_escape_string($_POST['rowID']);
+
+		# Deleting a row from the database (D part of CRUD)
+		if($_POST['key'] == 'deleteRow'){
+			$conn->query("DELETE FROM country WHERE id='$rowID'");
+			exit("Country has been deleted");
+		}
+
+
 
  		$name = $conn->real_escape_string($_POST['name']);
  		$shortDesc = $conn->real_escape_string($_POST['shortDesc']);
  		$longDesc = $conn->real_escape_string($_POST['longDesc']);
- 		$rowID = $conn->real_escape_string($_POST['rowID']);
+ 		
 
 
  		# Updating data to the database
