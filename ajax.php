@@ -4,6 +4,24 @@
  	if(isset($_POST['key'])){
  		
  		$conn = new mysqli('localhost', 'root', '', 'php-ajax');
+
+
+ 		# Updaeting data into the database (U part of CRUD)
+ 		if($_POST['key'] == 'getRowData'){
+ 			$rowId = $conn->real_escape_string($_POST['rowId']);
+ 			$sql = $conn->query("SELECT country_name, short_description, long_description FROM country WHERE id='$rowId'");
+ 			$data = $sql->fetch_array();
+ 			$jsonArray = [
+ 				'countryName' => $data['country_name'],
+ 				'shortDesc' => $data['short_description'],
+ 				'longDesc' => $data['long_description'],
+ 			];
+
+ 			exit(json_encode($jsonArray));
+
+ 		}
+
+
  		# Select data from database (R part of CRUD)
  		if($_POST['key'] == 'getExistingData'){
  			$start = $conn->real_escape_string($_POST['start']);
@@ -16,9 +34,9 @@
  					$response .= '
  						<tr>
  							<td>' .$data["id"].'</td>
- 							<td>' .$data["country_name"] . '</td>
+ 							<td id="country_' .$data["id"].'">' .$data["country_name"] . '</td>
  							<td>
- 								<input type="button" value="Edit" class="btn btn-primary">
+ 								<input type="button" value="Edit" onclick="edit('.$data["id"].')" class="btn btn-primary">
  								<input type="button" value="View">
  								<input type="button" value="Delete" class="btn btn-danger">
  							</td>
@@ -31,11 +49,22 @@
  			}
 }
 
-# Create data to database (C Part Of CRUD)
+
  		$name = $conn->real_escape_string($_POST['name']);
  		$shortDesc = $conn->real_escape_string($_POST['shortDesc']);
  		$longDesc = $conn->real_escape_string($_POST['longDesc']);
+ 		$rowID = $conn->real_escape_string($_POST['rowID']);
 
+
+ 		# Updating data to the database
+ 		if($_POST['key'] == 'updateRow'){
+ 			$conn->query("UPDATE country SET country_name = '$name', short_description = '$shortDesc', long_description = '$longDesc' WHERE id='$rowID'");
+ 			exit('success');
+ 		}
+
+
+
+ 		# Create data to database (C Part Of CRUD)
  		if ($_POST['key'] == 'addNew') {
  			$sql = $conn->query("SELECT id FROM country WHERE country_name = '$name'");
  			if($sql->num_rows > 0){

@@ -19,10 +19,11 @@
 	 					<input type="text" class="form-control" placeholder="Country Name..." id="countryName"><br>
 	 					<textarea class="form-control" id="shortDesc" placeholder="Country short description..."></textarea><br>
 	 					<textarea class="form-control" id="longDesc" placeholder="Country long description..."></textarea><br>
+	 					<input type="hidden" id="editRowId" value="0"> 
 	 				</div>
 
 	 				<div class="modal-footer">
-	 					<input type="button" class="btn btn-success" value="Save" onclick="manageData('addNew')">
+	 					<input type="button" id="manageBtn" class="btn btn-success" value="Save" onclick="manageData('addNew')">
 	 				</div>
  			     </div>
 
@@ -60,8 +61,27 @@
  			$('#addNew').on('click', function(){
  				$('#tableManager').modal('show');
  			});
- 			getExistingData(0, 10);
+ 			getExistingData(0, 50);
  		});
+
+ 		function edit(rowId){
+ 			$.ajax({
+ 				url : 'ajax.php',
+ 				method : 'POST',
+ 				dataType : 'json',
+ 				data : {
+ 					key : 'getRowData',
+ 					rowId : rowId,
+ 				}, success : function(response){
+ 					$('#editRowId').val(rowId);
+ 					$('#countryName').val(response.countryName);
+ 					$('#shortDesc').val(response.shortDesc);
+ 					$('#longDesc').val(response.longDesc);
+ 					$('#tableManager').modal('show');
+ 					$('#manageBtn').attr('value', 'Save Changes').attr('onclick', "manageData('updateRow')");
+ 				}
+ 			});
+ 		}
 
  		function getExistingData(start,limit){
  			$.ajax({
@@ -84,10 +104,11 @@
  			});
  		}
 
- 		function manageData(key){
+ 		function manageData(key, edit){
  				var name = $("#countryName");
  				var shortDesc = $('#shortDesc');
  				var longDesc = $('#longDesc');
+ 				var editRowId = $('#editRowId');
 
  				if(isNotEmpty(name) && isNotEmpty(shortDesc) && isNotEmpty(longDesc)){
  					$.ajax({
@@ -99,8 +120,19 @@
  							name : name.val(),
  							shortDesc : shortDesc.val(),
  							longDesc : longDesc.val(),
+ 							rowID : editRowId.val(),
  						}, success : function(response){
- 							alert(response);
+ 							if(response != 'success'){
+ 								alert(response);
+ 							}else{	
+ 								$("#country_"+editRowId.val()).html(name.val());
+ 								name.val('');
+ 								shortDesc.val('');
+ 								longDesc.val('');
+ 								$('#manageBtn').attr('value', 'Add').attr('onclick', "manageData('addNew')");
+ 								$("#tableManager").modal('hide');
+ 								
+ 							}
  						}
  					});
  				}
